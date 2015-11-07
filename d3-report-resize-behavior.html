@@ -1,13 +1,38 @@
-<script src="../tux-d3/tux-d3.js"></script>
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-pubsub-behavior/xp-pubsub-behavior.html">
+<link rel="import" href="../tux-d3/tux-d3.html">
+<script src="lib/detect-element-resize.js"></script>
 <script>
   /* @polymerBehavior Tux.d3ReportResizeBehavior */
 
   TuxD3.ReportResizeBehaviorImpl =  {
-    properties: {
-      name: "ReportResizeBehavior"
-    }
+      __handleOnResize: XP.mock,
+
+      attached: function() {
+          var self = this;
+          self.__handleOnResize = XP.debounce(function(event){
+              self.fire('resize', { firer: self, detail: event.detail });
+              self.notify('resize', { firer: self, detail: event.detail});
+          }, 150);
+          window.addResizeListener(self, self.__handleOnResize);
+      },
+
+      detached: function() {
+          var self = this;
+          window.removeResizeListener(self, self.__handleOnResize);
+      },
+
+      addResizeListener: function(element) {
+          var self = this;
+          self.subscribe(element);
+      },
+      removeResizeListener: function(element) {
+          var self = this;
+          self.unsubscribe(element);
+      }
   };
 
   /* @polymerBehavior */
-  TuxD3.ReportResizeBehavior = TuxD3.ReportResizeBehaviorImpl;
+  TuxD3.ReportResizeBehavior = [ Polymer.XPPubSubBehavior, TuxD3.ReportResizeBehaviorImpl ];
 </script>
